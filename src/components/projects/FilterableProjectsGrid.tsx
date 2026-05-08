@@ -81,16 +81,14 @@ export function FilterableProjectsGrid({
         onProjectSelect={handleProjectSelect}
       />
 
-      {selectedProject && (
-        <ProjectDetailPanel
+      <ProjectDetailPanel
           project={selectedProject}
-          isOpen={true}
+          isOpen={!!selectedProject}
           onClose={handleClosePanel}
           onNext={handleNextProject}
           onPrev={handlePrevProject}
           returnFocusRef={returnFocusRef}
         />
-      )}
     </div>
   );
 }

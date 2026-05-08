@@ -9,6 +9,12 @@ type RevealProps = {
   delay?: number;
   y?: number;
   scale?: number;
+  /**
+   * priority: above-the-fold LCP content. Stays visible (opacity: 1) at all
+   * times — only the Y offset animates. Prevents Framer Motion from hiding
+   * the element during hydration, which kills Lighthouse LCP.
+   */
+  priority?: boolean;
 };
 
 export function Reveal({
@@ -17,11 +23,25 @@ export function Reveal({
   delay = 0,
   y = 28,
   scale = 1,
+  priority = false,
 }: RevealProps) {
   const prefersReducedMotion = useReducedMotion();
 
   if (prefersReducedMotion) {
     return <div className={className}>{children}</div>;
+  }
+
+  if (priority) {
+    return (
+      <motion.div
+        initial={{ opacity: 1, y }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}
+        className={cn(className)}
+      >
+        {children}
+      </motion.div>
+    );
   }
 
   return (

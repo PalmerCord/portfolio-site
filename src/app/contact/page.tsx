@@ -1,4 +1,4 @@
-import { ContactForm } from "@/components/contact/ContactForm";
+import { ContactFormWithRecaptcha } from "@/components/contact/ContactFormWithRecaptcha";
 import { Reveal } from "@/components/animation/Reveal";
 import { createPageMetadata } from "@/lib/site";
 import type { Metadata } from "next";
@@ -69,7 +69,7 @@ export default function ContactPage() {
 
       {/* ── Form ─────────────────────────────────────── */}
       <Reveal delay={0.1} y={20}>
-        <ContactForm />
+        <ContactFormWithRecaptcha />
       </Reveal>
 
     </div>

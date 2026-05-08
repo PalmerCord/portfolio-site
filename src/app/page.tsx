@@ -1,5 +1,6 @@
 import { Reveal } from "@/components/animation/Reveal";
 import { HeroCursorAura } from "@/components/home/HeroCursorAura";
+import { BenchmarkGauges } from "@/components/home/BenchmarkGauges";
 import { FilterableProjectsGrid } from "@/components/projects/FilterableProjectsGrid";
 import { StatsCounter } from "@/components/projects/StatsCounter";
 import { Button } from "@/components/ui/button";
@@ -25,23 +26,23 @@ export default async function Home() {
         <HeroCursorAura>
           <div className="hero-surface w-full border border-white/15 px-6 py-8 shadow-[0_30px_80px_rgba(34,44,34,0.12)] sm:px-10 sm:py-10 md:px-14 md:py-12">
             <div className="mx-auto flex min-h-[clamp(24rem,58svh,34rem)] max-w-4xl flex-col items-center justify-center gap-4 text-center">
-              <Reveal delay={0.02}>
+              <Reveal delay={0.02} priority>
                 <p className="text-[0.72rem] font-semibold tracking-[0.34em] text-[color:var(--hero-kicker)] uppercase">
                   Full Stack Engineer • Product Builder • Cannabis Ecommerce
                 </p>
               </Reveal>
-              <Reveal delay={0.1} y={36}>
+              <Reveal delay={0.1} y={36} priority>
                 <h1 className="max-w-4xl text-5xl font-semibold tracking-[-0.05em] text-balance sm:text-6xl md:text-7xl">
                   Cord Palmer
                 </h1>
               </Reveal>
-              <Reveal delay={0.18} y={34}>
+              <Reveal delay={0.18} y={34} priority>
                 <p className="text-muted-foreground max-w-2xl text-lg leading-7">
                   Building high-performance products and premium digital experiences with a focus
                   on motion, conversion, and real-world production work.
                 </p>
               </Reveal>
-              <Reveal delay={0.26} y={32}>
+              <Reveal delay={0.26} y={32} priority>
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <Button asChild size="lg" className="shadow-[0_12px_35px_rgba(24,53,42,0.22)]">
                     <Link href="#projects">View Projects</Link>
@@ -56,7 +57,7 @@ export default async function Home() {
                   </Button>
                 </div>
               </Reveal>
-              <Reveal delay={0.34} y={28}>
+              <Reveal delay={0.34} y={28} priority>
                 <div className="mt-2 flex flex-wrap items-center justify-center gap-3 text-sm text-[color:var(--hero-meta)]">
                   <span className="hero-pill">150+ sites shipped</span>
                   <span className="hero-pill">Live portfolio archive</span>
@@ -89,6 +90,8 @@ export default async function Home() {
           </Button>
         </Reveal>
       </section>
+
+      <BenchmarkGauges />
     </>
   );
 }

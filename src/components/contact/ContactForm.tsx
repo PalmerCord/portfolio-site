@@ -2,9 +2,9 @@
 
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, CheckCircle2, Loader2, Send } from "lucide-react";
+import { CheckCircle2, Loader2, Send } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -188,6 +188,7 @@ function FormSection({
 
 export function ContactForm() {
   const prefersReducedMotion = useReducedMotion();
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const [form, setForm] = useState<FormState>({
     name: "",
@@ -222,10 +223,13 @@ export function ContactForm() {
     setSubmitState("submitting");
 
     try {
+      if (!executeRecaptcha) throw new Error("reCAPTCHA not ready");
+      const recaptchaToken = await executeRecaptcha("contact_form");
+
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, recaptchaToken, _hp: "" }),
       });
 
       if (!res.ok) throw new Error("Request failed");
@@ -247,7 +251,7 @@ export function ContactForm() {
         <div className="space-y-2">
           <h2 className="text-xl font-semibold tracking-tight">Message sent!</h2>
           <p className="text-muted-foreground max-w-sm text-sm leading-6">
-            I'll be in touch within one business day. If you need a faster reply,
+            I&apos;ll be in touch within one business day. If you need a faster reply,
             email{" "}
             <a
               href="mailto:hello@cordpalmer.com"
@@ -264,6 +268,16 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+      {/* Honeypot — hidden from real users, bots fill it in */}
+      <input
+        type="text"
+        name="_hp"
+        aria-hidden="true"
+        tabIndex={-1}
+        autoComplete="off"
+        className="absolute left-[-9999px] top-0 h-0 w-0 overflow-hidden opacity-0"
+        defaultValue=""
+      />
 
       {/* ── 01 Who are you? ─────────────────────────── */}
       <FormSection step="01" title="Who are you?">
