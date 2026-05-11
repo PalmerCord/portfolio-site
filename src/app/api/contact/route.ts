@@ -40,7 +40,12 @@ export async function POST(request: Request) {
   const origin = request.headers.get("origin") ?? "";
   const host = request.headers.get("host") ?? "";
   const isLocalDev = host.startsWith("localhost") || host.startsWith("127.0.0.1");
-  const isAllowedOrigin = isLocalDev || (siteUrl && origin === siteUrl) || origin.endsWith(".vercel.app");
+  const isSameHost = origin === `https://${host}` || origin === `http://${host}`;
+  const isAllowedOrigin =
+    isLocalDev ||
+    isSameHost ||
+    (siteUrl && origin === siteUrl) ||
+    origin.endsWith(".vercel.app");
   if (!isAllowedOrigin) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
