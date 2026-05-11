@@ -205,6 +205,7 @@ export function ContactForm() {
 
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const recaptchaReady = !!executeRecaptcha;
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -527,7 +528,7 @@ export function ContactForm() {
 
       <button
         type="submit"
-        disabled={submitState === "submitting" || !form.name || !form.email || !form.projectDescription}
+        disabled={submitState === "submitting" || !form.name || !form.email || !form.projectDescription || !recaptchaReady}
         className={cn(
           "group flex w-full items-center justify-center gap-2.5 rounded-xl border border-transparent bg-primary px-6 py-4 text-sm font-semibold text-primary-foreground shadow-[0_12px_35px_rgba(24,53,42,0.22)] transition-all",
           "hover:brightness-110 hover:shadow-[0_16px_42px_rgba(0,200,180,0.28)]",
@@ -539,6 +540,11 @@ export function ContactForm() {
           <>
             <Loader2 className="size-4 animate-spin" aria-hidden="true" />
             Sending…
+          </>
+        ) : !recaptchaReady ? (
+          <>
+            <Loader2 className="size-4 animate-spin opacity-60" aria-hidden="true" />
+            Loading…
           </>
         ) : (
           <>
