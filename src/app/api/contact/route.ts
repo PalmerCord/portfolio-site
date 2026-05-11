@@ -18,20 +18,32 @@ const ALLOWED_PLATFORM = new Set(["nextjs", "wordpress", "shopify", "elementor",
 const ALLOWED_BUDGET = new Set(["under-5k", "5k-15k", "15k-50k", "50k-plus", "salary", ""]);
 const ALLOWED_TIMELINE = new Set(["asap", "1-month", "1-3-months", "flexible", ""]);
 
-async function verifyRecaptcha(token: string): Promise<boolean> {
+async function verifyRecaptcha(token: string): Promise<{ ok: boolean; reason?: string }> {
   const secret = process.env.RECAPTCHA_SECRET_KEY;
   if (!secret) {
     console.warn("[contact] RECAPTCHA_SECRET_KEY not set — skipping verification");
-    return true;
+    return { ok: true };
   }
   const res = await fetch("https://www.google.com/recaptcha/api/siteverify", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ secret, response: token }),
   });
-  const data = await res.json() as { success: boolean; score?: number; action?: string };
-  // Require score >= 0.5 (0 = bot, 1 = human)
-  return data.success && (data.score ?? 0) >= 0.5;
+  const data = await res.json() as {
+    success: boolean;
+    score?: number;
+    action?: string;
+    "error-codes"?: string[];
+  };
+  console.log("[contact] reCAPTCHA response:", JSON.stringify(data));
+  if (!data.success) {
+    return { ok: false, reason: `reCAPTCHA failed: ${(data["error-codes"] ?? []).join(", ") || "unknown"}` };
+  }
+  const score = data.score ?? 0;
+  if (score < 0.5) {
+    return { ok: false, reason: `reCAPTCHA score too low: ${score}` };
+  }
+  return { ok: true };
 }
 
 export async function POST(request: Request) {
@@ -74,9 +86,9 @@ export async function POST(request: Request) {
   if (!recaptchaToken) {
     return NextResponse.json({ error: "Missing security token" }, { status: 422 });
   }
-  const recaptchaOk = await verifyRecaptcha(recaptchaToken);
-  if (!recaptchaOk) {
-    return NextResponse.json({ error: "Security check failed" }, { status: 422 });
+  const recaptchaResult = await verifyRecaptcha(recaptchaToken);
+  if (!recaptchaResult.ok) {
+    return NextResponse.json({ error: recaptchaResult.reason ?? "Security check failed" }, { status: 422 });
   }
 
   // ── Field validation ─────────────────────────────────────────────────────────
