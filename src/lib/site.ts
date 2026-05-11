@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 const defaultTitle = "Cord Palmer | Full Stack Engineer";
 const defaultDescription =
   "Personal and agency portfolio showcasing high-performance web experiences, shipped products, and modern full-stack engineering work.";
-const defaultOgImage = "/og-image.png";
+const defaultOgImage = "/opengraph-image";
 
 function getMetadataBaseUrl() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
