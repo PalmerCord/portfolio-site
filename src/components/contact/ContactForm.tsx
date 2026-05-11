@@ -204,6 +204,7 @@ export function ContactForm() {
   });
 
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -221,9 +222,10 @@ export function ContactForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitState("submitting");
+    setErrorMessage(null);
 
     try {
-      if (!executeRecaptcha) throw new Error("reCAPTCHA not ready");
+      if (!executeRecaptcha) throw new Error("reCAPTCHA not ready — please refresh and try again");
       const recaptchaToken = await executeRecaptcha("contact_form");
 
       const res = await fetch("/api/contact", {
@@ -232,9 +234,18 @@ export function ContactForm() {
         body: JSON.stringify({ ...form, recaptchaToken, _hp: "" }),
       });
 
-      if (!res.ok) throw new Error("Request failed");
+      if (!res.ok) {
+        let msg = `Error ${res.status}`;
+        try {
+          const json = await res.json() as { error?: string };
+          if (json.error) msg = json.error;
+        } catch { /* non-JSON body */ }
+        throw new Error(msg);
+      }
+
       setSubmitState("success");
-    } catch {
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Unknown error");
       setSubmitState("error");
     }
   }
@@ -493,18 +504,24 @@ export function ContactForm() {
       {/* ── Submit ───────────────────────────────────── */}
       <AnimatePresence>
         {submitState === "error" && (
-          <motion.p
+          <motion.div
             initial={prefersReducedMotion ? false : { opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             className="rounded-xl border border-destructive/40 bg-destructive/8 px-4 py-3 text-sm text-destructive"
           >
-            Something went wrong. Please email{" "}
-            <a href="mailto:hello@cordpalmer.com" className="underline underline-offset-4">
-              hello@cordpalmer.com
-            </a>{" "}
-            directly.
-          </motion.p>
+            <span className="font-medium">Submission failed</span>
+            {errorMessage && (
+              <span className="ml-1.5 opacity-80">— {errorMessage}</span>
+            )}
+            <span className="mt-1 block text-xs opacity-70">
+              Please try again or email{" "}
+              <a href="mailto:hello@cordpalmer.com" className="underline underline-offset-4">
+                hello@cordpalmer.com
+              </a>{" "}
+              directly.
+            </span>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -533,6 +550,12 @@ export function ContactForm() {
 
       <p className="text-center text-xs text-muted-foreground">
         No spam, no CRM. Your answers go straight to my inbox and I reply within one business day.
+      </p>
+      <p className="text-center text-[11px] text-muted-foreground/50">
+        Protected by reCAPTCHA —{" "}
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-muted-foreground">Privacy</a>
+        {" & "}
+        <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-muted-foreground">Terms</a>
       </p>
     </form>
   );
