@@ -138,9 +138,8 @@ ${projectDescription || "—"}
 `.trim();
 
   const { error } = await getResend().emails.send({
-    // Switch "from" to a verified domain address after setting up cordpalmer.com in Resend
-    from: "Cord Palmer Portfolio <onboarding@resend.dev>",
-    to: "hello@cordpalmer.com",
+    from: "Cord Palmer Portfolio <hello@cordpalmer.com>",
+    to: "cord@swrv.tech",
     replyTo: email,
     subject: `New inquiry from ${name}${company ? ` · ${company}` : ""}`,
     text: emailBody,
