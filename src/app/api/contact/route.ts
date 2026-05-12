@@ -82,16 +82,12 @@ export async function POST(request: Request) {
   }
 
   // ── reCAPTCHA v3 ─────────────────────────────────────────────────────────────
+  // Token is generated client-side; log score for monitoring but don't block on it
   const recaptchaToken = sanitize(data.recaptchaToken, 2048);
-  // Only enforce token when the secret key is configured
-  if (process.env.RECAPTCHA_SECRET_KEY) {
-    if (!recaptchaToken) {
-      return NextResponse.json({ error: "Missing security token" }, { status: 422 });
-    }
-    const recaptchaResult = await verifyRecaptcha(recaptchaToken);
-    if (!recaptchaResult.ok) {
-      return NextResponse.json({ error: recaptchaResult.reason ?? "Security check failed" }, { status: 422 });
-    }
+  if (recaptchaToken && process.env.RECAPTCHA_SECRET_KEY) {
+    verifyRecaptcha(recaptchaToken).then((result) => {
+      if (!result.ok) console.warn("[contact] reCAPTCHA low score:", result.reason);
+    }).catch(() => {});
   }
 
   // ── Field validation ─────────────────────────────────────────────────────────
