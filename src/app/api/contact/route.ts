@@ -83,12 +83,15 @@ export async function POST(request: Request) {
 
   // ── reCAPTCHA v3 ─────────────────────────────────────────────────────────────
   const recaptchaToken = sanitize(data.recaptchaToken, 2048);
-  if (!recaptchaToken) {
-    return NextResponse.json({ error: "Missing security token" }, { status: 422 });
-  }
-  const recaptchaResult = await verifyRecaptcha(recaptchaToken);
-  if (!recaptchaResult.ok) {
-    return NextResponse.json({ error: recaptchaResult.reason ?? "Security check failed" }, { status: 422 });
+  // Only enforce token when the secret key is configured
+  if (process.env.RECAPTCHA_SECRET_KEY) {
+    if (!recaptchaToken) {
+      return NextResponse.json({ error: "Missing security token" }, { status: 422 });
+    }
+    const recaptchaResult = await verifyRecaptcha(recaptchaToken);
+    if (!recaptchaResult.ok) {
+      return NextResponse.json({ error: recaptchaResult.reason ?? "Security check failed" }, { status: 422 });
+    }
   }
 
   // ── Field validation ─────────────────────────────────────────────────────────

@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { CheckCircle2, Loader2, Send } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -205,7 +205,20 @@ export function ContactForm() {
 
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const recaptchaReady = !!executeRecaptcha;
+  const [recaptchaTimedOut, setRecaptchaTimedOut] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // If reCAPTCHA hasn't loaded within 5s, allow submit anyway
+  useEffect(() => {
+    if (executeRecaptcha) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      return;
+    }
+    timerRef.current = setTimeout(() => setRecaptchaTimedOut(true), 5000);
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [executeRecaptcha]);
+
+  const recaptchaReady = !!executeRecaptcha || recaptchaTimedOut;
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -226,8 +239,9 @@ export function ContactForm() {
     setErrorMessage(null);
 
     try {
-      if (!executeRecaptcha) throw new Error("reCAPTCHA not ready — please refresh and try again");
-      const recaptchaToken = await executeRecaptcha("contact_form");
+      const recaptchaToken = executeRecaptcha
+        ? await executeRecaptcha("contact_form")
+        : "";
 
       const res = await fetch("/api/contact", {
         method: "POST",
