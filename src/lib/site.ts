@@ -5,18 +5,30 @@ const defaultDescription =
   "Personal and agency portfolio showcasing high-performance web experiences, shipped products, and modern full-stack engineering work.";
 const defaultOgImage = "/opengraph-image";
 
+/**
+ * The single canonical origin for the site.
+ *
+ * This MUST match the host the origin actually serves a 200 on. Vercel serves
+ * this project at `www.cordpalmer.com` and 308-redirects the apex, so every
+ * canonical, sitemap entry, and robots.txt reference has to use the www host —
+ * otherwise Google is handed a sitemap where every URL redirects, which reads
+ * as "Page with redirect" / "Discovered - currently not indexed" in Search
+ * Console.
+ */
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.cordpalmer.com").replace(
+  /\/+$/,
+  ""
+);
+
+/** The agency Cord Palmer founded. Linked from the About page and the footer. */
+export const SWRV_URL = "https://swrv.tech";
+
 function getMetadataBaseUrl() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-
-  if (siteUrl) {
-    try {
-      return new URL(siteUrl);
-    } catch {
-      return new URL("http://localhost:3000");
-    }
+  try {
+    return new URL(SITE_URL);
+  } catch {
+    return new URL("https://www.cordpalmer.com");
   }
-
-  return new URL("http://localhost:3000");
 }
 
 export const siteConfig = {

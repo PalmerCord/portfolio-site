@@ -1,18 +1,35 @@
 import type { Metadata } from "next";
-import { createPageMetadata } from "@/lib/site";
+import { createPageMetadata, SWRV_URL } from "@/lib/site";
+import { aboutPageGraph, serializeJsonLd } from "@/lib/structured-data";
 import { Reveal } from "@/components/animation/Reveal";
 import { StatsCounter } from "@/components/projects/StatsCounter";
 import { TechStack } from "@/components/about/TechStack";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Code2, Globe, ShoppingCart, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  CheckCircle2,
+  Code2,
+  Globe,
+  ShoppingCart,
+  Sparkles,
+} from "lucide-react";
 
 export const metadata: Metadata = createPageMetadata({
-  title: "About Cord Palmer | Full Stack Engineer & Product Builder",
+  title: "About Cord Palmer | Full Stack Engineer & Founder of SWRV Tech",
   description:
-    "Cord Palmer is a full-stack engineer with 5+ years and 150+ shipped sites. Specializing in Next.js, React, TypeScript, WordPress, Elementor, and cannabis ecommerce. Available for full-time roles and contract engagements.",
+    "Cord Palmer is a full-stack engineer with 5+ years and 150+ shipped sites, and the founder of SWRV Tech. Specializing in Next.js, React, TypeScript, WordPress, Elementor, and cannabis ecommerce. Available for full-time roles and contract engagements.",
   path: "/about",
 });
+
+const swrvCapabilities = [
+  "Websites & ecommerce",
+  "Mobile apps (iOS · Android)",
+  "Admin dashboards",
+  "Business automation",
+  "Systems integration",
+];
 
 const services = [
   {
@@ -86,6 +103,11 @@ export default function AboutPage() {
   return (
     <div className="mx-auto w-full max-w-5xl space-y-24 px-6 py-12">
 
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(aboutPageGraph) }}
+      />
+
       {/* ── Hero ─────────────────────────────────────── */}
       <section className="space-y-6">
         <Reveal>
@@ -101,9 +123,17 @@ export default function AboutPage() {
         <Reveal delay={0.16} y={28}>
           <p className="text-muted-foreground max-w-2xl text-lg leading-7">
             I&apos;m Cord Palmer — a full-stack engineer with 5+ years and 150+ shipped sites across
-            agency, ecommerce, and product work. I specialize in Next.js, React, TypeScript,
-            WordPress, and Elementor, with deep experience building in regulated industries like
-            cannabis retail.
+            agency, ecommerce, and product work, and the founder of{" "}
+            <a
+              href={SWRV_URL}
+              target="_blank"
+              rel="noopener"
+              className="text-foreground underline decoration-primary/40 underline-offset-4 transition-colors hover:decoration-primary"
+            >
+              SWRV Tech
+            </a>
+            . I specialize in Next.js, React, TypeScript, WordPress, and Elementor, with deep
+            experience building in regulated industries like cannabis retail.
           </p>
         </Reveal>
         <Reveal delay={0.22} y={22}>
@@ -130,6 +160,69 @@ export default function AboutPage() {
           <StatsCounter value={5} suffix="+" label="Years Building" durationMs={1200} />
           <StatsCounter value={3} suffix="" label="Industries Deep" durationMs={900} />
           <StatsCounter value={0} suffix="" label="Missed Deadlines" durationMs={600} />
+        </section>
+      </Reveal>
+
+      {/* ── Founder / SWRV Tech ──────────────────────── */}
+      <Reveal y={20}>
+        <section
+          aria-labelledby="swrv-heading"
+          className="space-y-5 rounded-2xl border border-border/70 bg-card/70 p-8 backdrop-blur"
+        >
+          <div className="space-y-2">
+            <p className="text-[0.72rem] font-semibold tracking-[0.28em] text-[color:var(--hero-kicker)] uppercase">
+              Founder
+            </p>
+            <h2 id="swrv-heading" className="text-2xl font-semibold tracking-tight sm:text-3xl">
+              I founded{" "}
+              {/* Deliberately followed (no rel="nofollow") and referrer-preserving
+                  (rel="noopener" without "noreferrer") so SWRV Tech gets both the
+                  link equity and the referral attribution from this page. */}
+              <a
+                href={SWRV_URL}
+                target="_blank"
+                rel="noopener"
+                className="text-primary underline decoration-primary/35 underline-offset-4 transition-colors hover:decoration-primary"
+              >
+                SWRV Tech
+              </a>
+            </h2>
+          </div>
+
+          <div className="text-muted-foreground max-w-2xl space-y-4 text-sm leading-6">
+            <p>
+              SWRV Tech is the studio I founded and run, built around one idea: your website
+              shouldn&apos;t sit outside your business, it should run on the same rails. We build
+              websites, ecommerce, mobile apps, dashboards, and automation as one connected system
+              — so the site your customers see and the operations you run stop being two separate
+              jobs.
+            </p>
+            <p>
+              Based in Puerto Rico and serving clients across the US, SWRV Tech is where the bulk
+              of the 150+ production sites in this portfolio were delivered. If you&apos;re looking
+              for a team rather than a single engineer, that&apos;s the front door.
+            </p>
+          </div>
+
+          <ul className="flex flex-wrap gap-1.5" role="list">
+            {swrvCapabilities.map((capability) => (
+              <li
+                key={capability}
+                className="rounded-md border border-border/60 bg-muted/50 px-2 py-0.5 text-[0.71rem] font-medium text-muted-foreground"
+              >
+                {capability}
+              </li>
+            ))}
+          </ul>
+
+          <div className="pt-1">
+            <Button asChild variant="outline">
+              <a href={SWRV_URL} target="_blank" rel="noopener">
+                Visit swrv.tech
+                <ArrowUpRight />
+              </a>
+            </Button>
+          </div>
         </section>
       </Reveal>
 

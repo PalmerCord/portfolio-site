@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { getProjectBySlug, getProjects } from "@/lib/projects";
 import { createPageMetadata } from "@/lib/site";
+import type { Project } from "@/types/project";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,6 +15,32 @@ function toDescription(content: string): string {
   const normalized = content.replace(/\s+/g, " ").trim();
   if (normalized.length <= 160) return normalized;
   return `${normalized.slice(0, 157)}...`;
+}
+
+function hostnameOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
+/**
+ * Up to six sibling projects that share an industry tag.
+ *
+ * Detail pages were previously crawl dead-ends — the only outbound internal
+ * link was the breadcrumb back to /projects. Cross-linking siblings gives
+ * Googlebot real paths between them instead of relying on the sitemap alone.
+ */
+function getRelatedProjects(all: Project[], current: Project): Project[] {
+  const industries = new Set(current.industry);
+  return all
+    .filter(
+      (candidate) =>
+        candidate.slug !== current.slug &&
+        candidate.industry.some((tag) => industries.has(tag))
+    )
+    .slice(0, 6);
 }
 
 export const dynamicParams = false;
@@ -52,6 +79,8 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   if (!project) {
     notFound();
   }
+
+  const related = getRelatedProjects(await getProjects(), project);
 
   return (
     <section className="mx-auto w-full max-w-6xl space-y-8 px-6 py-12">
@@ -122,6 +151,41 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           ))}
         </div>
       </section>
+
+      <section className="space-y-2">
+        <h2 className="text-lg font-semibold">Live site</h2>
+        <p className="text-muted-foreground text-sm">
+          <Link
+            href={project.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground underline underline-offset-4"
+          >
+            {hostnameOf(project.url)}
+          </Link>
+        </p>
+      </section>
+
+      {related.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold">Related work</h2>
+          <p className="text-muted-foreground text-sm">
+            Other {project.industry[0]} builds from the same portfolio.
+          </p>
+          <ul className="flex flex-wrap gap-2" role="list">
+            {related.map((item) => (
+              <li key={item.slug}>
+                <Link
+                  href={`/projects/${item.slug}`}
+                  className="border-border bg-card hover:border-primary/40 hover:text-foreground text-muted-foreground inline-block rounded-md border px-3 py-1.5 text-sm font-medium transition-colors"
+                >
+                  {item.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </section>
   );
 }

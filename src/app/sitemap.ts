@@ -1,7 +1,6 @@
 import { getProjects } from "@/lib/projects";
+import { SITE_URL as siteUrl } from "@/lib/site";
 import type { MetadataRoute } from "next";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cordpalmer.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const projects = await getProjects();

@@ -48,6 +48,64 @@ const liveSiteScreenshots: Partial<Record<string, string>> = {
   yilo: "/projects/yilo-cord-palmer-portfolio-screenshot.png",
 };
 
+function hostnameOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/+$/, "");
+  }
+}
+
+function formatList(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? "";
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
+}
+
+/**
+ * Opening sentences, rotated per-site.
+ *
+ * These pages are generated from a small data set, so without rotation all 40+
+ * of them ship byte-identical prose and near-identical meta descriptions —
+ * which is exactly the thin/duplicate-content pattern that leaves them stuck on
+ * "Discovered - currently not indexed" in Search Console. Each site gets a
+ * different frame plus its own domain, industry mix, and stack.
+ */
+const openings = [
+  (title: string, host: string) =>
+    `${title} is a live production site at ${host}, designed, built, and maintained by Cord Palmer.`,
+  (title: string, host: string) =>
+    `Cord Palmer built and ships ${title}, the production website running at ${host}.`,
+  (title: string, host: string) =>
+    `${title} runs in production at ${host} — a client build delivered end to end by Cord Palmer.`,
+  (title: string, host: string) =>
+    `Serving customers at ${host}, ${title} is an active client site from Cord Palmer's production portfolio.`,
+];
+
+const cannabisNote =
+  "Work on the build covered the constraints that come with a regulated retail market — age verification, compliant product presentation, and menu structures that stay accurate as inventory moves — without giving up the conversion path a storefront depends on.";
+
+const generalNote =
+  "The build focused on page speed, clear information architecture, and a structure the client's own team can keep updated after launch.";
+
+function describeLiveSite(
+  title: string,
+  url: string,
+  industry: string[],
+  tech: string[]
+): string {
+  const host = hostnameOf(url);
+  // Stable per-slug rotation: same site always renders the same copy across builds.
+  const opening = openings[title.length % openings.length](title, host);
+  const isCannabis = industry.includes("cannabis");
+
+  return [
+    opening,
+    `It sits in the ${formatList(industry)} space and was delivered with ${formatList(tech)}.`,
+    isCannabis ? cannabisNote : generalNote,
+  ].join(" ");
+}
+
 function createLiveSiteProject(
   slug: string,
   title: string,
@@ -67,7 +125,7 @@ function createLiveSiteProject(
     showInPersonal: true,
     showInAgency: true,
     iframeAllowed: true,
-    content: `${title} is part of Cord Palmer's currently live client portfolio and represents an active production website.`,
+    content: describeLiveSite(title, url, industry, tech),
   };
 }
 
